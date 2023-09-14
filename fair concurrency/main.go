@@ -13,6 +13,7 @@ const maxLimit = 100000000
 
 var batches int = 10
 var totalNumberofPrimes int32 = 0
+var currentNumber int32 = 2
 
 func checkPrime(number int) {
 	if number%2 == 0 {
@@ -29,28 +30,28 @@ func checkPrime(number int) {
 func main() {
 	start := time.Now()
 	var wg sync.WaitGroup
-	beginId := 3
-	batchSize := maxLimit / batches
+
 	for i := 0; i < batches; i++ {
 		wg.Add(1)
-		endId := beginId + batchSize
-		go calculateBatches(strconv.Itoa(i), &wg, beginId, endId)
-		beginId = endId + 1
-
+		go performTask(strconv.Itoa(i), &wg)
 	}
 	wg.Wait()
+
 	fmt.Println("Total no of prime numbers till", maxLimit, "is", totalNumberofPrimes, "and the process completed in ", time.Since(start))
 
 }
 
-func calculateBatches(name string, wg *sync.WaitGroup, beginId int, endId int) {
-	defer wg.Done()
+func performTask(name string, wg *sync.WaitGroup) {
 	start := time.Now()
-	for i := beginId; i < endId; i++ {
-		checkPrime(i)
-	}
-	fmt.Println("Time taken for thread ", name, "completed in ", time.Since(start))
-}
+	defer wg.Done()
 
-//Each thread here is doing not equal amount of work because of distribution of prime numbers in every batch is not
-//even and hence the time completion for each thread is uneven . Therefore labelled as unfair concurrency.
+	for {
+		x := atomic.AddInt32(&currentNumber, 1)
+		if x > maxLimit {
+			break
+		}
+		checkPrime(int(x))
+	}
+	fmt.Println("Thread no.", name, " completed in ", time.Since(start))
+
+}
