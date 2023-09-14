@@ -15,7 +15,7 @@ var batches int = 10
 var totalNumberofPrimes int32 = 0
 
 func checkPrime(number int) {
-	if number&1 == 0 {
+	if number%2 == 0 {
 		return
 	}
 	for i := 3; i <= int(math.Sqrt(float64(number))); i++ {
